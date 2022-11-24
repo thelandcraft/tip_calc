@@ -115,25 +115,40 @@ Screen:
                                         
                                     MDTextField:
                                         hint_text: "Счет чека"
+                                        id:loan
+                                        color_mode:'custom'
+                                        line_color_focus: 0,0,0,1
+                                        text_color: 0,0,0,1
+                                        current_hint_text_color: 0,0,0,1
                                 
                                 BoxLayout:
                                     orientation: 'horizontal'                         
                                     
-                                    MDIconButton:
+                                    MDIconButton:                      
                                         icon: "percent"
                                         
                                     MDTextField:
                                         hint_text: "Процент чаевых,%"
-                                    
+                                        id: months
+                                        color_mode:'custom'
+                                        line_color_focus: 0,0,0,1
+                                        text_color: 0,0,0,1
+                                        current_hint_text_color: 0,0,0,1
+
                                 BoxLayout:
                                     orientation: 'horizontal'                                
                                     
                                     MDIconButton:
                                         icon: "account-group"
-                                            
+        
                                     MDTextField:
                                         hint_text: "Разделить счёт"
-                                    
+                                        id: interest
+                                        color_mode:'custom'
+                                        line_color_focus: 0,0,0,1
+                                        text_color: 0,0,0,1
+                                        current_hint_text_color: 0,0,0,1
+
                                 BoxLayout:
                                     orientation: 'horizontal'                                 
                                     
@@ -144,30 +159,96 @@ Screen:
                                     MDTextField:
                                         id: payment_type
                                         hint_text: "Скидочная карта"
+                                        color_mode:'custom'
+                                        line_color_focus: 0,0,0,1
+                                        text_color: 0,0,0,1
+                                        current_hint_text_color: 0,0,0,1
                                         on_focus: if self.focus: app.menu.open()
+
+                                MDSeparator:
+                                    height: "1dp"
+
+
+
+                                BoxLayout:
+                                    orientation: 'horizontal'
+                                    
+                                    AnchorLayout:
+                                        anchor_x: 'center'
+
+                                        MDIconButton:
+                                            icon: "cash"
+                                            text: "vi4islenie"
+                                            theme_text_color: "Custom"
+                                            text_color: 1, 1, 1, 1
+                                            line_color: 0, 0, 0, 1
+                                            icon_color: 1, 0, 0, 1
+                                            md_bg_color: 0.1, 0.1, 0.1, 1
+                                            adaptive_width: True
+                                            on_release: app.calc_table(*args)
+
                         Tab:
                             id: tab2
                             name: 'tab2'
                             text: f"[size=20][font={fonts[-1]['fn_regular']}]{md_icons['table-large']}[/size][/font] Список"
-                        
-                    Widget:
 
-                
+                            BoxLayout:
+                                orientation: 'vertical'
+                                padding: "10dp" 
+                                
+                                ScrollView:
+                                
+                                    MDList:
+                                        id: table_list              
 
         MDNavigationDrawer:
             id: nav_drawer
 
             ContentNavigationDrawer:
                 id: content_drawer
+
+<ItemTable>:
+    size_hint_y: None
+    height: "42dp"
+
+    canvas:
+        Color:
+            rgba: root.color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    MDLabel:
+        text: root.num
+        halign: "center"
+    MDLabel:
+        text: root.payment
+        halign: "center"
+    MDLabel:
+        text: root.interest
+        halign: "center"
+    MDLabel:
+        text: root.principal
+        halign: "center"
+    MDLabel:
+        text: root.rubles
+        halign: "center"
+    MDLabel:
+        text: root.debt
+        halign: "center"
+        
 '''
 
-class Tab(MDFloatLayout, MDTabsBase):
-    pass
+
 class ContentNavigationDrawer(BoxLayout):
     pass
+
+
 class ItemDrawer(OneLineIconListItem):
     icon = StringProperty()
     text_color = ListProperty((0, 0, 0, 1))
+
+
 class DrawerList(ThemableBehavior, MDList):
     def set_color_item(self, instance_item):
         """Вызывается при нажатии на пункт меню."""
@@ -179,6 +260,19 @@ class DrawerList(ThemableBehavior, MDList):
                 break
         instance_item.text_color = self.theme_cls.primary_color
 
+
+class Tab(MDFloatLayout, MDTabsBase):
+    pass
+
+class ItemTable(BoxLayout):
+    num = StringProperty()
+    date = StringProperty()
+    payment = StringProperty()
+    interest = StringProperty()
+    principal = StringProperty()
+    debt = StringProperty()
+    color = ListProperty()
+    rubles = StringProperty()
 
 class CalculateTip(MDApp):
 
@@ -206,7 +300,7 @@ class CalculateTip(MDApp):
         Clock.schedule_once(set_item, 0.5)
 
     def build(self):
-        # self.theme_cls.theme_style = "Light"  # "Dark"  # "Light"
+        self.theme_cls.theme_style = "Light"  # "Dark"  # "Light"
         # return Builder.load_string(KV)
         return self.screen
 
@@ -214,6 +308,13 @@ class CalculateTip(MDApp):
 
 
     def on_start(self):
+        
+        self.screen.ids.loan.text = "5000"
+        self.screen.ids.months.text = "12"
+        self.screen.ids.interest.text = "2"
+        self.screen.ids.payment_type.text = "Да"
+
+
         icons_item = {
             "book":"О приложении",
             "github":"Код на GitHub",
@@ -243,6 +344,66 @@ class CalculateTip(MDApp):
         ): 
         print("click" + tab_text)
       
+    def calc_table(self, *args):
+        print("button1 pressed")
+        
+        loan = self.screen.ids.loan.text
+        months = self.screen.ids.months.text
+        interest = self.screen.ids.interest.text
+        payment_type = self.screen.ids.payment_type.text
 
+        print(loan+" "+months+" "+interest+" "+payment_type)
+        # convert to date object, float, and so on
+        
+        loan = float(loan)
+        months = int(months)
+        interest = float(interest)
+
+       
+        percent = months/100
+        full_loan = loan+(loan*percent)
+        rublesl = loan*percent
+        print(full_loan)
+
+        
+
+        self.screen.ids.table_list.clear_widgets()
+        self.screen.ids.table_list.add_widget(
+            ItemTable(
+                color=(0.2, 0.2, 0.2, 0.5),
+                num="№",                
+                payment="Чек",
+                interest="Люди",
+                principal="Чаевые,%",
+                rubles ="Чаевые,руб." ,
+                debt="Итог",
+            )
+        )
+
+        debt_end_month = loan
+        for i in range(0, 1):
+            row_color = (1, 1, 1, 1)
+            if (i % 2 != 0):
+                row_color = (0.2, 0.2, 0.2, 0.1)
+        
+
+            self.screen.ids.table_list.add_widget(
+                ItemTable(
+                    color=row_color,  # (0, 0, 0, 1),
+                    num=str(i + 1),           
+                    payment=str(round(loan, 2)),
+                    interest=str(round(interest, 2)),
+                    principal=str(round(months , 2 ))+"%",
+                    rubles=str(round(rublesl,2)),
+                    debt=str(round(full_loan, 2)),
+                )
+            )
+
+            # d = datetime.datetime.today()
+            # print(next_month_date(d))
+            # start_date = start_date + datetime.timedelta(days=30)
+            
+
+        pass
         
 CalculateTip().run()
