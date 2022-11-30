@@ -9,6 +9,7 @@ from kivy.properties import StringProperty, ListProperty
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.list import OneLineIconListItem, MDList
+from kivymd.uix.button import MDRoundFlatIconButton
 
 from kivymd.uix.tab import MDTabsBase
 from kivymd.uix.floatlayout import MDFloatLayout
@@ -18,6 +19,7 @@ from kivymd.font_definitions import fonts
 
 from kivymd.uix.menu import MDDropdownMenu
 from kivy.clock import Clock
+import webbrowser
 
 
 KV = '''
@@ -66,6 +68,9 @@ KV = '''
         font_style: "Caption"
         size_hint_y: None
         height: self.texture_size[1]
+
+ 
+
 
     ScrollView:
 
@@ -149,21 +154,8 @@ Screen:
                                         text_color: 0,0,0,1
                                         current_hint_text_color: 0,0,0,1
 
-                                BoxLayout:
-                                    orientation: 'horizontal'                                 
-                                    
-                                    MDIconButton:
-                                        icon: "card"
-                                            
-                                    
-                                    MDTextField:
-                                        id: payment_type
-                                        hint_text: "Скидочная карта"
-                                        color_mode:'custom'
-                                        line_color_focus: 0,0,0,1
-                                        text_color: 0,0,0,1
-                                        current_hint_text_color: 0,0,0,1
-                                        on_focus: if self.focus: app.menu.open()
+                                                               
+                                
 
                                 MDSeparator:
                                     height: "1dp"
@@ -218,9 +210,7 @@ Screen:
             size: self.size
             pos: self.pos
 
-    MDLabel:
-        text: root.num
-        halign: "center"
+    
     MDLabel:
         text: root.payment
         halign: "center"
@@ -247,6 +237,9 @@ class ContentNavigationDrawer(BoxLayout):
 class ItemDrawer(OneLineIconListItem):
     icon = StringProperty()
     text_color = ListProperty((0, 0, 0, 1))
+
+    def open(self,*args):
+        webbrowser.open_new_tab("https://telegra.ph/Esli-nashli-oshibku-11-30")
 
 
 class DrawerList(ThemableBehavior, MDList):
@@ -276,32 +269,18 @@ class ItemTable(BoxLayout):
 
 class CalculateTip(MDApp):
 
-    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.screen = Builder.load_string(KV)
         # https://kivymd.readthedocs.io/en/latest/components/menu/?highlight=MDDropDownItem#center-position
         #menu_items = [{"icon": "git", "text": f"Item {i}"} for i in range(5)]
-        menu_items = [{"icon": "checkbox-marked-circle-outline", "text": "Да"},
-                      {"icon": "bolnisi-cross", "text": "Нет"}]
-        self.menu = MDDropdownMenu(
-            caller=self.screen.ids.payment_type,
-            items=menu_items,
-            position="auto",
-            width_mult=4,
-        )
-        self.menu.bind(on_release=self.set_item)
+        
 
-    def set_item(self, instance_menu, instance_menu_item):
-        def set_item(interval):
-            self.screen.ids.payment_type.text = instance_menu_item.text
-            instance_menu.dismiss()
-
-        Clock.schedule_once(set_item, 0.5)
+   
 
     def build(self):
         self.theme_cls.theme_style = "Light"  # "Dark"  # "Light"
-        # return Builder.load_string(KV)
+        #return Builder.load_string(KV)
         return self.screen
 
     
@@ -312,22 +291,21 @@ class CalculateTip(MDApp):
         self.screen.ids.loan.text = "5000"
         self.screen.ids.months.text = "12"
         self.screen.ids.interest.text = "2"
-        self.screen.ids.payment_type.text = "Да"
+        
 
 
         icons_item = {
             "book":"О приложении",
             "github":"Код на GitHub",
-            "alert":"Нашли ошибку",
+            "alert":"Нашли ошибку"   
         }
-        icons_item_tab = {
-            "alert":"Нашли ошибку",
-        }
+        
         for icon_name in icons_item.keys():
             self.root.ids.content_drawer.ids.md_list.add_widget(
                 ItemDrawer(icon=icon_name, text=icons_item[icon_name])
             )
 
+        
         # for name_tab in list(md_icons.keys())[15:30]:
         #     self.root.ids.tabs.add_widget(Tab(icon=name_tab, title=name_tab)
         #     )
@@ -339,6 +317,9 @@ class CalculateTip(MDApp):
         #              text=f"[size=20][font={fonts[-1]['fn_regular']}]{md_icons[icon_name]}[/size][/font] {name_tab}"
         #             )
         #         )
+
+
+        #отвечает за перелистывание tab
     def on_tab_switch(
         self, instance_tabs, instance_tab, instance_tab_label, tab_text
         ): 
@@ -350,10 +331,9 @@ class CalculateTip(MDApp):
         loan = self.screen.ids.loan.text
         months = self.screen.ids.months.text
         interest = self.screen.ids.interest.text
-        payment_type = self.screen.ids.payment_type.text
-
-        print(loan+" "+months+" "+interest+" "+payment_type)
-        # convert to date object, float, and so on
+        
+        print(loan+" "+months+" "+interest+" ")
+        # преобразовать в объект date, float и так далее
         
         loan = float(loan)
         months = int(months)
@@ -361,17 +341,18 @@ class CalculateTip(MDApp):
 
        
         percent = months/100
-        full_loan = loan+(loan*percent)
+        full_loan = (loan+(loan*percent))/interest
         rublesl = loan*percent
+        
         print(full_loan)
 
         
 
-        self.screen.ids.table_list.clear_widgets()
+        
         self.screen.ids.table_list.add_widget(
             ItemTable(
                 color=(0.2, 0.2, 0.2, 0.5),
-                num="№",                
+                               
                 payment="Чек",
                 interest="Люди",
                 principal="Чаевые,%",
@@ -380,7 +361,7 @@ class CalculateTip(MDApp):
             )
         )
 
-        debt_end_month = loan
+        
         for i in range(0, 1):
             row_color = (1, 1, 1, 1)
             if (i % 2 != 0):
@@ -390,7 +371,7 @@ class CalculateTip(MDApp):
             self.screen.ids.table_list.add_widget(
                 ItemTable(
                     color=row_color,  # (0, 0, 0, 1),
-                    num=str(i + 1),           
+                              
                     payment=str(round(loan, 2)),
                     interest=str(round(interest, 2)),
                     principal=str(round(months , 2 ))+"%",
@@ -402,7 +383,8 @@ class CalculateTip(MDApp):
             # d = datetime.datetime.today()
             # print(next_month_date(d))
             # start_date = start_date + datetime.timedelta(days=30)
-            
+
+        
 
         pass
         
